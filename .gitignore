@@ -1,0 +1,66 @@
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env/
+.python-version
+
+# Environment and local configuration
+.env.*
+!.env.example
+*.local
+config.local.py
+settings.local.py
+
+# Jupyter and test artifacts
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Training outputs and experiment files
+checkpoints/
+outputs/
+logs/
+runs/
+wandb/
+tensorboard/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+
+# Dataset and large local files
+data/
+datasets/
+*.zip
+*.tar
+*.tar.gz
+
+# IDE and operating-system files
+.idea/
+.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
