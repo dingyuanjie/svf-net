@@ -7,24 +7,36 @@ class SVFAttention(nn.Module):
     """Multi-head self-attention augmented with a structural potential field."""
 
     def __init__(self, dim: int, heads: int = 8, lambda_svf: float = 0.1,
-                 max_len: int = 2048, dropout: float = 0.0) -> None:
+                 max_len: int = 2048, dropout: float = 0.0,
+                 field_mode: str = "svf") -> None:
         super().__init__()
         if dim % heads != 0:
             raise ValueError(f"dim ({dim}) must be divisible by heads ({heads})")
         self.dim, self.heads, self.max_len = dim, heads, max_len
         self.head_dim = dim // heads
-        self.lambda_svf = lambda_svf
+        if field_mode not in {"svf", "baseline", "random"}:
+            raise ValueError("field_mode must be svf, baseline, or random")
+        self.lambda_svf, self.field_mode = lambda_svf, field_mode
         self.qkv = nn.Linear(dim, dim * 3)
         self.out = nn.Linear(dim, dim)
         self.dropout = nn.Dropout(dropout)
         # These are registered parameters, so they move correctly with .to(device).
-        self.theta = nn.Parameter(torch.empty(max_len))
-        self.radius = nn.Parameter(torch.linspace(0.0, 1.0, max_len))
-        nn.init.uniform_(self.theta, -torch.pi, torch.pi)
+        theta = torch.empty(max_len).uniform_(-torch.pi, torch.pi)
+        radius = torch.linspace(0.0, 1.0, max_len)
+        random_field = torch.randn(max_len, max_len)
+        # Keep the parameter budget identical across ablation variants.
+        # Baseline/random retain these parameters but do not use them.
+        self.theta = nn.Parameter(theta)
+        self.radius = nn.Parameter(radius)
+        self.register_buffer("random_field", random_field)
 
     def structural_field(self, length: int) -> Tensor:
         if length > self.max_len:
             raise ValueError(f"sequence length {length} exceeds max_len {self.max_len}")
+        if self.field_mode == "baseline":
+            return torch.zeros(length, length, device=self.theta.device, dtype=self.theta.dtype)
+        if self.field_mode == "random":
+            return self.random_field[:length, :length]
         theta, radius = self.theta[:length], self.radius[:length]
         angle = torch.cos(theta[:, None] - theta[None, :])
         scale = torch.exp(-torch.abs(radius[:, None] - radius[None, :]))

@@ -5,10 +5,11 @@ from .svf_attention import SVFAttention
 
 class SVFBlock(nn.Module):
     def __init__(self, dim: int, heads: int, max_len: int, lambda_svf: float = 0.1,
-                 dropout: float = 0.0, ffn_mult: int = 4) -> None:
+                 dropout: float = 0.0, ffn_mult: int = 4,
+                 field_mode: str = "svf") -> None:
         super().__init__()
         self.norm1 = nn.LayerNorm(dim)
-        self.attn = SVFAttention(dim, heads, lambda_svf, max_len, dropout)
+        self.attn = SVFAttention(dim, heads, lambda_svf, max_len, dropout, field_mode)
         self.norm2 = nn.LayerNorm(dim)
         self.ffn = nn.Sequential(
             nn.Linear(dim, dim * ffn_mult), nn.GELU(), nn.Dropout(dropout),

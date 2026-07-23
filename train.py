@@ -10,15 +10,18 @@ from model import SVFTransformer
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train the SVF-Transformer v0.1 toy language model")
     parser.add_argument("--steps", type=int, default=None)
+    parser.add_argument("--model", choices=("baseline", "svf", "random"), default="svf")
+    parser.add_argument("--output", default="outputs")
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     args = parser.parse_args()
     cfg = Config()
     steps = args.steps or cfg.steps
     device = torch.device(args.device)
     model = SVFTransformer(cfg.vocab_size, cfg.dim, cfg.depth, cfg.heads,
-                           cfg.max_len, cfg.lambda_svf, cfg.dropout).to(device)
+                           cfg.max_len, cfg.lambda_svf, cfg.dropout, args.model).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.learning_rate)
     model.train()
+    print(f"model={args.model} parameters={sum(p.numel() for p in model.parameters()):,} device={device}")
     for step in range(steps):
         tokens = torch.randint(cfg.vocab_size, (cfg.batch_size, cfg.max_len + 1), device=device)
         logits = model(tokens[:, :-1])

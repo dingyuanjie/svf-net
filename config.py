@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Config:
-    vocab_size: int = 50_000
-    dim: int = 512
+    vocab_size: int = 256
+    dim: int = 256
     depth: int = 6
     heads: int = 8
     max_len: int = 512
@@ -13,3 +13,4 @@ class Config:
     batch_size: int = 8
     steps: int = 1_000
     learning_rate: float = 3e-4
+    field_mode: str = "svf"
